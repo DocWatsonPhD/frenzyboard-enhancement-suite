@@ -1,0 +1,37 @@
+{
+  // Required
+  "manifest_version": 2,
+  "name": "BuzzKill extension",
+  "version": "1.0",
+
+  // The pages we want access to
+  "permissions": [
+    "https://www.frenzyboard.net/",
+    "http://www.frenzyboard.net/",
+	"https://.frenzyboard.net/",
+    "http://.frenzyboard.net/",
+	"tabs"
+  ],
+  // What actions the extension will take
+  "page_action": {
+    "default_title": "BuzzKill extension",
+    "default_icon": "fif_icon.png",
+    "default_popup": "popup.html"
+  },
+  
+  "content_scripts": [
+    {
+      "matches": ["https://*.frenzyboard.net/*", "http://*.frenzyboard.net/*", "https://frenzyboard.net/*", "http://frenzyboard.net/*"],
+      "js": ["extension.js"]
+    }
+  ]
+  
+  // The page in this script has access to all of the Chrome APIs, but no access
+  // to the content on the page that's currently being viewed in the tab.
+  // This script is where I interact with the browser, telling it when
+  // to inject my code, how to initialize the extension, and other shit.
+  //"background": {
+  //  "scripts": ["bootstrap.js"],
+  //  "persistent": false
+  //}
+}
