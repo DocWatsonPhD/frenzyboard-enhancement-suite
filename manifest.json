@@ -17,7 +17,7 @@
   // What actions the extension will take
   "page_action": {
     "default_title": "Frenzyboard Enhancement Suite",
-    "default_icon": "fif_icon.png",
+    "default_icon": "fif-icon.png",
     "default_popup": "popup.html"
   },
   
