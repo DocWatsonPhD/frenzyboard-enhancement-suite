@@ -10,8 +10,8 @@
   "permissions": [
     "https://www.frenzyboard.net/",
     "http://www.frenzyboard.net/",
-    "https://.frenzyboard.net/",
-    "http://.frenzyboard.net/",
+    "https://frenzyboard.net/",
+    "http://frenzyboard.net/",
     "tabs"
   ],
   // What actions the extension will take
