@@ -21,6 +21,11 @@
     "default_popup": "popup.html"
   },
   
+  "background": {
+    "scripts": ["bootstrap.js"],
+    "persistent": false
+  },
+  
   "content_scripts": [
     {
       "matches": ["https://*.frenzyboard.net/*", "http://*.frenzyboard.net/*", "https://frenzyboard.net/*", "http://frenzyboard.net/*"],
