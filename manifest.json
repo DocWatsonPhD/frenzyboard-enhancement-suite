@@ -1,0 +1,30 @@
+{
+  // Required
+  "manifest_version": 2,
+  "name": "Frenzyboard Enhancement Suite",
+  "version": "0.1",
+
+  // The pages we want access to. Reserved keyword "tabs" shows up because
+  // we need access to the Chrome tabs to make sure we only pop up when we're
+  // visiting Frenzyboard.net
+  "permissions": [
+    "https://www.frenzyboard.net/",
+    "http://www.frenzyboard.net/",
+    "https://.frenzyboard.net/",
+    "http://.frenzyboard.net/",
+    "tabs"
+  ],
+  // What actions the extension will take
+  "page_action": {
+    "default_title": "Frenzyboard Enhancement Suite",
+    "default_icon": "fif_icon.png",
+    "default_popup": "popup.html"
+  },
+  
+  "content_scripts": [
+    {
+      "matches": ["https://*.frenzyboard.net/*", "http://*.frenzyboard.net/*", "https://frenzyboard.net/*", "http://frenzyboard.net/*"],
+      "js": ["extension.js"]
+    }
+  ]
+}
