@@ -1,20 +1,22 @@
 {
   // Required
   "manifest_version": 2,
-  "name": "BuzzKill extension",
-  "version": "1.0",
+  "name": "Frenzyboard Enhancement Suite",
+  "version": "0.1",
 
-  // The pages we want access to
+  // The pages we want access to. Reserved keyword "tabs" shows up because
+  // we need access to the Chrome tabs to make sure we only pop up when we're
+  // visiting Frenzyboard.net
   "permissions": [
     "https://www.frenzyboard.net/",
     "http://www.frenzyboard.net/",
-	"https://.frenzyboard.net/",
+    "https://.frenzyboard.net/",
     "http://.frenzyboard.net/",
-	"tabs"
+    "tabs"
   ],
   // What actions the extension will take
   "page_action": {
-    "default_title": "BuzzKill extension",
+    "default_title": "Frenzyboard Enhancement Suite",
     "default_icon": "fif_icon.png",
     "default_popup": "popup.html"
   },
@@ -25,13 +27,4 @@
       "js": ["extension.js"]
     }
   ]
-  
-  // The page in this script has access to all of the Chrome APIs, but no access
-  // to the content on the page that's currently being viewed in the tab.
-  // This script is where I interact with the browser, telling it when
-  // to inject my code, how to initialize the extension, and other shit.
-  //"background": {
-  //  "scripts": ["bootstrap.js"],
-  //  "persistent": false
-  //}
 }
