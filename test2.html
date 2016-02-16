@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<LINK REL=StyleSheet HREF="styles.css" TYPE="text/css">
+	<script type="text/javascript" src="http://code.jquery.com/jquery-2.2.0.min.js"></script>
+	<script type="text/javascript">
+	
+    $(document).ready(function() {
+		var targets = document.getElementsByClassName("bubble-item");
+        for(var i = 0; i < targets.length; i++) {
+            var target = targets[i];
+			console.log(target);
+			target.onmouseover = function() { $('#divtoshow').show(); };
+			target.onmousemove = function() { hoverdiv(event,'divtoshow'); }; 
+			target.onmouseout = function() { $('#divtoshow').hide(); };
+        }
+    });
+	
+	function hoverdiv(e,divid) {
+
+		var left  = e.clientX;//  + "px";
+		var top  = e.clientY;//  + "px";
+	
+		var div = document.getElementById(divid);
+		var parent = div.parentNode;
+		var clientHeight = div.clientHeight;
+		var clientWidth = div.clientWidth;
+		var offsetHeight = div.offsetHeight;
+		var offsetWidth = div.offsetWidth;
+		
+		var right = e.clientX + offsetWidth;// + "px";
+		var bottom = e.clientY + offsetHeight;// + "px";
+	
+		div.style.left = left + "px";
+		div.style.top = top + "px";
+		
+		//$("#"+divid).toggle(); 
+		
+		return false;
+	}
+	</script>
+</head>
+<body>
+<div id="divtoshow" style="position: fixed;display:none;" class="speech">I\'m simultaneously procrastinating and not tired. Be fun</div>
+<br><br>
+<table border="1">
+<tr>
+<td class="bubble-item">Row 1, Column 1</td>
+<td>Row 1, Column 2</td>
+</tr>
+<tr>
+<td>Row 2, Column 1</td>
+<td class="bubble-item">Row 2, Column 2</td>
+</tr>
+</table>
+<span onmousemove="hoverdiv(event,'divtoshow')" onmouseout="hoverdiv(event,'divtoshow')">Mouse over this</span>
+<br></br><br></br><br></br><br></br><br></br><br></br><br></br><br></br><br></br><br></br><br></br><br></br>
+<br></br><br></br><br></br><br></br><br></br><br></br><br></br><br></br><br></br><br></br><br></br><br></br>
+<span onmousemove="hoverdiv(event,'divtoshow')" onmouseout="hoverdiv(event,'divtoshow')">Mouse over this</span>
+</body>
+</html>
