@@ -29,7 +29,8 @@
   "content_scripts": [
     {
       "matches": ["https://*.frenzyboard.net/*", "http://*.frenzyboard.net/*", "https://frenzyboard.net/*", "http://frenzyboard.net/*"],
-      "js": ["extension.js"]
+      "js": ["extension.js"],
+	  "run_at": "document_end"
     }
   ]
 }
