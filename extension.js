@@ -3,6 +3,32 @@
 // Everything here (e.g. console statements) end up the visitor's main console
 
 console.log("extension.js is here!");
+// TODO: Break these out into some dictionary or other fancy object? 
+// Probably doesn't matter
+var onNewTopic = false;
+var onRead = false;
+var onBrowse = false;
+
+function setOnNewTopic()
+{
+	onNewTopic = true;
+	onBrowse = false;
+	onRead = false;
+}
+
+function setOnIndex()
+{
+	onNewTopic = false;
+	onBrowse = true;
+	onRead = false;
+}
+
+function setOnRead()
+{
+	onNewTopic = false;
+	onBrowse = false;
+	onRead = true;
+}
 
 //TODO: Figure out why the bootstrap code doesn't work for gating the extension...
 if (window.location.href.toLowerCase().indexOf("frenzyboard.net") > -1)
@@ -10,6 +36,7 @@ if (window.location.href.toLowerCase().indexOf("frenzyboard.net") > -1)
     if ((window.location.href.toLowerCase().indexOf("?action=browse") > -1) ||
 	    (window.location.href.toLowerCase().indexOf("?action") === -1))
 	{
+		setOnNewTopic();
 		window.addEventListener('load', function()
 		{
 			console.log("extension.js load browse page listener");
@@ -17,14 +44,91 @@ if (window.location.href.toLowerCase().indexOf("frenzyboard.net") > -1)
 		});
 	}
 	
-	if (window.location.href.toLowerCase().indexOf("?action=read") > -1)
+	var readIndex = window.location.href.toLowerCase().indexOf("?action=read");
+	
+	if (readIndex > -1)
 	{
+		setOnRead();
 		window.addEventListener('load', function()
 		{
 			console.log("extension.js load read page listener");
 			getYoutubeTags();
+			addYoutubeTagButton();
 		});
 	}
+	
+	var newTopicIndex = window.location.href.toLowerCase().indexOf("?action=newtopic");
+	if (newTopicIndex > -1)
+	{
+		setOnNewTopic();
+		window.addEventListener('load', function()
+		{
+			console.log("extension.js load read/new topic listener");
+			addYoutubeTagButton();
+		});
+	}
+}
+
+function youtubeButtonPrompt()
+{
+	var ytId = prompt("Enter URL or video ID:","");
+	if (ytId === "") return;
+	// Get the node we're modifying
+	var textarea;
+	if (onNewTopic)
+	{
+		var newTopicForm = document.getElementsByName("newTopicForm")[0];
+		textarea = newTopicForm.postBody; 
+	}
+	else
+	{
+		var replyForm = document.getElementsByName("replyForm")[0];
+		textarea = replyForm.postBody;
+	}
+	// This is mostly untouched from the original garbage since I'm too lazy
+	// to do something else
+	var len = textarea.textLength;
+	var selStart = textarea.selectionStart;
+	var selEnd = textarea.selectionEnd;
+	
+	if (selEnd === 1 || selEnd === 2) selEnd = len;
+	
+	var opn = (textarea.value).substring(0, selStart);
+	var midl = (textarea.value).substring(selStart, selEnd)
+	var clos = (textarea.value).substring(selEnd, len);
+	bbstring1 = "[yt]" + ytId;
+	bbstring2 = "[/yt]";
+	textarea.value = opn + bbstring1 + midl + bbstring2 + clos;
+	textarea.selectionStart = selStart + bbstring1.length;
+	textarea.selectionEnd = (selEnd - 1) + bbstring2.length;
+	textarea.focus();
+	return;
+}
+
+function addYoutubeTagButton()
+{
+	//var buttonCollection = document.querySelectorAll('td > input[type="button"]'); // Get all button elements inside a td
+	var postBody = document.getElementsByName('postBody');
+	// Get the <br> element at the very end of the other buttons.
+	// lol @ stupid bullshit
+	var toInsertBefore = postBody[0].previousSibling.previousSibling;
+	var targetParent = toInsertBefore.parentNode;
+	var ytButton = document.createElement('input');
+	// add button type
+	var attr = document.createAttribute('type');
+	attr.value = 'button';
+	ytButton.setAttributeNode(attr);
+	// add an ID unlike THE REST OF THE FUCKING ELEMENTS ON THIS SITE
+	attr = document.createAttribute('id');
+	attr.value = 'youtube-quick-button';
+	ytButton.setAttributeNode(attr);
+	// put on "Youtube" text
+	attr = document.createAttribute('value');
+	attr.value = 'Youtube';
+	ytButton.setAttributeNode(attr);
+	// add click attribute
+	ytButton.addEventListener("click", function() { youtubeButtonPrompt(); });
+	targetParent.insertBefore(ytButton, toInsertBefore);
 }
 
 function getYoutubeTags()
