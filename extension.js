@@ -4,30 +4,170 @@
 
 console.log("extension.js is here!");
 
+// TODO: Break these out into some dictionary or other fancy object? 
+// Probably doesn't matter
+var onNewTopic = false;
+var onRead = false;
+var onBrowse = false;
+
+function setOnNewTopic()
+{
+	onNewTopic = true;
+	onBrowse = false;
+	onRead = false;
+}
+
+function setOnIndex()
+{
+	onNewTopic = false;
+	onBrowse = true;
+	onRead = false;
+}
+
+function setOnRead()
+{
+	onNewTopic = false;
+	onBrowse = false;
+	onRead = true;
+ }
+
+// @name replaceAttribute(targetElement, attributeName, attributeValue)
+// @parameter targetElement -- A Node element retrieved from the DOM
+// @parameter attributeName 
+//		A string representing the name of an attribute existing 
+// 		on the target element
+// @parameter attributeValue 
+//		A string representing the value for the attribute. This
+// 		can work for functions like event listeners by using the
+// 		function.toString() method, i.e. setOnRead.toString(), to 
+// 		return the function in string literal form.
+// @return 
+//		Nothing, but adds or replaces attributeName for targetElement so
+//		that it is given attributeValue.
+function replaceAttribute(targetElement, attributeName, attributeValue)
+{
+	if (targetElement.hasAttribute(attributeName))
+	{
+		targetElement.removeAttribute(attributeName);
+	}
+	var newAttr = document.createAttribute(attributeName);
+	newAttr.value = attributeValue;
+	targetElement.setAttributeNode(newAttr);
+}
+
 //TODO: Figure out why the bootstrap code doesn't work for gating the extension...
+// Set up the window load events based on the page we're currently viewing
 if (window.location.href.toLowerCase().indexOf("frenzyboard.net") > -1)
 {	
     if ((window.location.href.toLowerCase().indexOf("?action=browse") > -1) ||
 	    (window.location.href.toLowerCase().indexOf("?action") === -1))
 	{
+		setOnIndex();
 		window.addEventListener('load', function()
 		{
 			console.log("extension.js load browse page listener");
-			getTopicClassRows();
+			setupPreviewTooltips();
 		});
 	}
 	
 	if (window.location.href.toLowerCase().indexOf("?action=read") > -1)
 	{
+		setOnRead();
 		window.addEventListener('load', function()
 		{
 			console.log("extension.js load read page listener");
-			getYoutubeTags();
+			fillYoutubeTags();
+			addYoutubeTagButton();
+		});
+	}
+	
+	var newTopicIndex = window.location.href.toLowerCase().indexOf("?action=newtopic");
+	if (newTopicIndex > -1)
+	{
+		setOnNewTopic();
+		window.addEventListener('load', function()
+		{
+			console.log("extension.js load new topic listener");
+			addYoutubeTagButton();
 		});
 	}
 }
 
-function getYoutubeTags()
+// @name youtubeButtonPrompt()
+// @return 
+//		Nothing, but prompts the user for a URL or Youtube video ID and 
+//		inserts it in-place for the given textArea.
+function youtubeButtonPrompt()
+{
+	var ytId = prompt("Enter URL or video ID:","");
+	if (ytId === "") return;
+	// Get the node we're modifying
+	var textarea;
+	if (onNewTopic)
+	{
+		var newTopicForm = document.getElementsByName("newTopicForm")[0];
+		textarea = newTopicForm.postBody; 
+	}
+	else
+	{
+		var replyForm = document.getElementsByName("replyForm")[0];
+		textarea = replyForm.postBody;
+	}
+	// This is mostly untouched from the original garbage since I'm too lazy
+	// to do something else
+	var len = textarea.textLength;
+	var selStart = textarea.selectionStart;
+	var selEnd = textarea.selectionEnd;
+	
+	if (selEnd === 1 || selEnd === 2) selEnd = len;
+	
+	var opn = (textarea.value).substring(0, selStart);
+	var midl = (textarea.value).substring(selStart, selEnd)
+	var clos = (textarea.value).substring(selEnd, len);
+	bbstring1 = "[yt]" + ytId;
+	bbstring2 = "[/yt]";
+	textarea.value = opn + bbstring1 + midl + bbstring2 + clos;
+	textarea.selectionStart = selStart + bbstring1.length;
+	textarea.selectionEnd = (selEnd - 1) + bbstring2.length;
+	textarea.focus();
+	return;
+}
+
+// @name addYoutubeTagButton()
+// @return 
+//		Nothing, but adds a shortcut button to the reply and new topic
+//		textAreas for quick-adding yt tags.
+function addYoutubeTagButton()
+{
+	//var buttonCollection = document.querySelectorAll('td > input[type="button"]'); // Get all button elements inside a td
+	var postBody = document.getElementsByName('postBody');
+	// Get the <br> element at the very end of the other buttons.
+	// lol @ stupid bullshit
+	var toInsertBefore = postBody[0].previousSibling.previousSibling;
+	var targetParent = toInsertBefore.parentNode;
+	var ytButton = document.createElement('input');
+	// add button type
+	var attr = document.createAttribute('type');
+	attr.value = 'button';
+	ytButton.setAttributeNode(attr);
+	// add an ID unlike THE REST OF THE FUCKING ELEMENTS ON THIS SITE
+	attr = document.createAttribute('id');
+	attr.value = 'youtube-quick-button';
+	ytButton.setAttributeNode(attr);
+	// put on "Youtube" text
+	attr = document.createAttribute('value');
+	attr.value = 'Youtube';
+	ytButton.setAttributeNode(attr);
+	// add click attribute
+	ytButton.addEventListener("click", function() { youtubeButtonPrompt(); });
+	targetParent.insertBefore(ytButton, toInsertBefore);
+}
+
+// @name fillYoutubeTags()
+// @return 
+//		Nothing, but replaces all existing [yt]...[/yt] entries with
+//		a default Youtube-provided iframe
+function fillYoutubeTags()
 {
 	var ytTag = "[yt]";
 	var endTag = "[/yt]";
@@ -67,6 +207,14 @@ function getYoutubeTags()
 	}
 }
 
+// @name getYoutubeVideoId(ytStr)
+// @parameter ytStr
+//		A string in one of 3 forms: A bare Youtube video ID,
+//		a short-form Youtube URL (i.e. https://youtu.be/<ID>),
+//		or a full Youtube URL (i.e. https://www.youtube.com/watch?v=<ID>...)
+// @return 
+//		The parsed Youtube ID from the given string
+// TODO: Bother with error checking? Would require a GET to Youtube probably.
 function getYoutubeVideoId(ytStr)
 {
 	var slashIndex = ytStr.indexOf("/");
@@ -78,7 +226,7 @@ function getYoutubeVideoId(ytStr)
 	}
 	if (lastSlashIndex === -1)
 	{
-		// If there isn't a slash at the end of the body, assume it's all an ID
+		// If there isn't a slash, assume it's all an ID
 		return ytStr;
 	}
 	else
@@ -98,55 +246,44 @@ function getYoutubeVideoId(ytStr)
 		}
 	}
 }
-// This would have been used for fixing the window.status bullshit, but alas
-// and alack, the old mouseover events can't be removed because they're
-// anonymous functions. HOW FUCKING GREAT!
-function getTopicClassRows()
+
+// @name setupPreviewTooltips()
+// @return 
+//		Nothing, but replaces the broken onmouseover listeners in the
+//		read page with functioning tooltips
+function setupPreviewTooltips()
 {
 	var targetString = "window.status";
 	var returnTrueString = "; return true;";
-	// Get all TD tags with topic class
-	var rows = document.querySelectorAll("td.topic");
+	// Get all tags with topic class. This includes more than what we
+	// really need, but we can't filter automatically by attribute.
+	var rows = document.getElementsByClassName("topic");
 	console.log(rows.length);
 	for (var i = 0; i < rows.length; i++) 
 	{
+		if (!rows[i].hasAttribute("onmouseover"))
+		{
+			continue;
+		}
 		var outerHTML = rows[i].outerHTML.toLowerCase();
 		// Get status text
 		var statusPos = outerHTML.indexOf(targetString);
 		var statusText = '';
 		if (statusPos > -1)
 		{
-			var startPos = statusPos + targetString.length + 2;
-			var endPos = outerHTML.indexOf('"', startPos);
-			if (endPos == -1) 
+			var startPos = statusPos + targetString.length + 2; // skip the append and initial quote
+			var endPos = outerHTML.indexOf('"', startPos); // Find the next quote from window.status="
+			if (endPos === -1) 
 			{ 
 				continue;
 			}
-			statusText = outerHTML.substring(startPos, endPos - returnTrueString.length - 1);
+			statusText = outerHTML.substring(startPos, endPos - returnTrueString.length - 1); // Don't include end quotes
 		}
 		if (statusText != '')
 		{
-			var spanElement = document.createElement('span');
-			// add visible=false attribute
-			var attr = document.createAttribute('visible');
-			attr.value = false;
-			spanElement.setAttributeNode(attr);
 			// add onmouseover attribute
-			attr = document.createAttribute('onmouseover');
-			attr.value = 'function() { log(\'' + statusText + '\'); }';
-			spanElement.setAttributeNode(attr);
-			spanElement.className = "bubble-item";
-			rows[i].appendChild(spanElement);
+			var functionStr = "console.log('" + statusText + "');";
+			replaceAttribute(rows[i], "onmouseover", functionStr);
 		}
 	}
-}
-
-function log(str)
-{
-	console.log(str);
-}
-
-function extractPreviewText(node, indexOfStatusStr)
-{
-	
 }
