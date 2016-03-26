@@ -19,7 +19,9 @@ if (window.location.href.toLowerCase().indexOf("frenzyboard.net") > -1)
 		});
 	}
 	
-	if (window.location.href.toLowerCase().indexOf("?action=read") > -1)
+	var readIndex = window.location.href.toLowerCase().indexOf("?action=read");
+	
+	if (readIndex > -1)
 	{
 		setOnRead();
 		window.addEventListener('load', function()
@@ -67,7 +69,7 @@ function setOnRead()
 	onNewTopic = false;
 	onBrowse = false;
 	onRead = true;
- }
+}
 
 // @name replaceAttribute(targetElement, attributeName, attributeValue)
 // @parameter targetElement 
