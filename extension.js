@@ -2,7 +2,48 @@
 // but can't use variables or functions defined in the bootstrap script or the page itself.
 // Everything here (e.g. console statements) end up the visitor's main console
 
-console.log("extension.js is here!");
+console.log("Frenzyboard Enhancment Suite is loading");
+
+//TODO: Figure out why the bootstrap code doesn't work for gating the extension...
+// Set up the window load events based on the page we're currently viewing
+if (window.location.href.toLowerCase().indexOf("frenzyboard.net") > -1)
+{	
+    if ((window.location.href.toLowerCase().indexOf("?action=browse") > -1) ||
+	    (window.location.href.toLowerCase().indexOf("?action") === -1))
+	{
+		setOnIndex();
+		window.addEventListener('load', function()
+		{
+			console.log("extension.js load browse page listener");
+			setupPreviewTooltips();
+		});
+	}
+	
+	var readIndex = window.location.href.toLowerCase().indexOf("?action=read");
+	
+	if (readIndex > -1)
+	{
+		setOnRead();
+		window.addEventListener('load', function()
+		{
+			console.log("extension.js load read page listener");
+			fillYoutubeTags();
+			addYoutubeTagButton();
+		});
+	}
+	
+	var newTopicIndex = window.location.href.toLowerCase().indexOf("?action=newtopic");
+	if (newTopicIndex > -1)
+	{
+		setOnNewTopic();
+		window.addEventListener('load', function()
+		{
+			console.log("extension.js load new topic listener");
+			addYoutubeTagButton();
+		});
+	}
+}
+
 // TODO: Break these out into some dictionary or other fancy object? 
 // Probably doesn't matter
 var onNewTopic = false;
@@ -30,45 +71,35 @@ function setOnRead()
 	onRead = true;
 }
 
-//TODO: Figure out why the bootstrap code doesn't work for gating the extension...
-if (window.location.href.toLowerCase().indexOf("frenzyboard.net") > -1)
-{	
-    if ((window.location.href.toLowerCase().indexOf("?action=browse") > -1) ||
-	    (window.location.href.toLowerCase().indexOf("?action") === -1))
+// @name replaceAttribute(targetElement, attributeName, attributeValue)
+// @parameter targetElement 
+//		A Node element retrieved from the DOM
+// @parameter attributeName 
+//		A string representing the name of an attribute existing 
+// 		on the target element
+// @parameter attributeValue 
+//		A string representing the value for the attribute. This
+// 		can work for functions like event listeners by using the
+// 		function.toString() method, i.e. setOnRead.toString(), to 
+// 		return the function in string literal form.
+// @return 
+//		Nothing, but adds or replaces attributeName for targetElement so
+//		that it is given attributeValue.
+function replaceAttribute(targetElement, attributeName, attributeValue)
+{
+	if (targetElement.hasAttribute(attributeName))
 	{
-		setOnNewTopic();
-		window.addEventListener('load', function()
-		{
-			console.log("extension.js load browse page listener");
-			getTopicClassRows();
-		});
+		targetElement.removeAttribute(attributeName);
 	}
-	
-	var readIndex = window.location.href.toLowerCase().indexOf("?action=read");
-	
-	if (readIndex > -1)
-	{
-		setOnRead();
-		window.addEventListener('load', function()
-		{
-			console.log("extension.js load read page listener");
-			getYoutubeTags();
-			addYoutubeTagButton();
-		});
-	}
-	
-	var newTopicIndex = window.location.href.toLowerCase().indexOf("?action=newtopic");
-	if (newTopicIndex > -1)
-	{
-		setOnNewTopic();
-		window.addEventListener('load', function()
-		{
-			console.log("extension.js load read/new topic listener");
-			addYoutubeTagButton();
-		});
-	}
+	var newAttr = document.createAttribute(attributeName);
+	newAttr.value = attributeValue;
+	targetElement.setAttributeNode(newAttr);
 }
 
+// @name youtubeButtonPrompt()
+// @return 
+//		Nothing, but prompts the user for a URL or Youtube video ID and 
+//		inserts it in-place for the given textArea.
 function youtubeButtonPrompt()
 {
 	var ytId = prompt("Enter URL or video ID:","");
@@ -105,6 +136,10 @@ function youtubeButtonPrompt()
 	return;
 }
 
+// @name addYoutubeTagButton()
+// @return 
+//		Nothing, but adds a shortcut button to the reply and new topic
+//		textAreas for quick-adding yt tags.
 function addYoutubeTagButton()
 {
 	//var buttonCollection = document.querySelectorAll('td > input[type="button"]'); // Get all button elements inside a td
@@ -131,7 +166,11 @@ function addYoutubeTagButton()
 	targetParent.insertBefore(ytButton, toInsertBefore);
 }
 
-function getYoutubeTags()
+// @name fillYoutubeTags()
+// @return 
+//		Nothing, but replaces all existing [yt]...[/yt] entries with
+//		a default Youtube-provided iframe
+function fillYoutubeTags()
 {
 	var ytTag = "[yt]";
 	var endTag = "[/yt]";
@@ -171,6 +210,14 @@ function getYoutubeTags()
 	}
 }
 
+// @name getYoutubeVideoId(ytStr)
+// @parameter ytStr
+//		A string in one of 3 forms: A bare Youtube video ID,
+//		a short-form Youtube URL (i.e. https://youtu.be/<ID>),
+//		or a full Youtube URL (i.e. https://www.youtube.com/watch?v=<ID>...)
+// @return 
+//		The parsed Youtube ID from the given string
+// TODO: Bother with error checking? Would require a GET to Youtube probably.
 function getYoutubeVideoId(ytStr)
 {
 	var slashIndex = ytStr.indexOf("/");
@@ -182,7 +229,7 @@ function getYoutubeVideoId(ytStr)
 	}
 	if (lastSlashIndex === -1)
 	{
-		// If there isn't a slash at the end of the body, assume it's all an ID
+		// If there isn't a slash, assume it's all an ID
 		return ytStr;
 	}
 	else
@@ -202,55 +249,47 @@ function getYoutubeVideoId(ytStr)
 		}
 	}
 }
-// This would have been used for fixing the window.status bullshit, but alas
-// and alack, the old mouseover events can't be removed because they're
-// anonymous functions. HOW FUCKING GREAT!
-function getTopicClassRows()
+
+// @name setupPreviewTooltips()
+// @return 
+//		Nothing, but replaces the broken onmouseover listeners in the
+//		read page with functioning tooltips
+function setupPreviewTooltips()
 {
 	var targetString = "window.status";
 	var returnTrueString = "; return true;";
-	// Get all TD tags with topic class
-	var rows = document.querySelectorAll("td.topic");
+	var rowId = "row-id-";
+	// Get all tags with topic class. This includes more than what we
+	// really need, but we can't filter automatically by attribute.
+	var rows = document.getElementsByClassName("topic");
 	console.log(rows.length);
 	for (var i = 0; i < rows.length; i++) 
 	{
+		if (!rows[i].hasAttribute("onmouseover"))
+		{
+			continue;
+		}
 		var outerHTML = rows[i].outerHTML.toLowerCase();
 		// Get status text
 		var statusPos = outerHTML.indexOf(targetString);
 		var statusText = '';
 		if (statusPos > -1)
 		{
-			var startPos = statusPos + targetString.length + 2;
-			var endPos = outerHTML.indexOf('"', startPos);
-			if (endPos == -1) 
+			var startPos = statusPos + targetString.length + 2; // skip the append and initial quote
+			var endPos = outerHTML.indexOf('"', startPos); // Find the next quote from window.status="
+			if (endPos === -1) 
 			{ 
 				continue;
 			}
-			statusText = outerHTML.substring(startPos, endPos - returnTrueString.length - 1);
+			statusText = outerHTML.substring(startPos, endPos - returnTrueString.length - 1); // Don't include end quotes
 		}
 		if (statusText != '')
 		{
-			var spanElement = document.createElement('span');
-			// add visible=false attribute
-			var attr = document.createAttribute('visible');
-			attr.value = false;
-			spanElement.setAttributeNode(attr);
-			// add onmouseover attribute
-			attr = document.createAttribute('onmouseover');
-			attr.value = 'function() { log(\'' + statusText + '\'); }';
-			spanElement.setAttributeNode(attr);
-			spanElement.className = "bubble-item";
-			rows[i].appendChild(spanElement);
+			// Add an ID because our tooltip library requires it,
+			// and because IT'S TWENTY SIXTEEN, PEOPLE! C'MON!
+			// IT'S TWENTY. SIX. TEEN! -John Oliver
+			replaceAttribute(rows[i], "id", rowId + i);
+			new Opentip("#" + rowId + i, statusText, {delay: 0, showOn: "mouseover"});
 		}
 	}
-}
-
-function log(str)
-{
-	console.log(str);
-}
-
-function extractPreviewText(node, indexOfStatusStr)
-{
-	
 }
