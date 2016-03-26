@@ -2,58 +2,7 @@
 // but can't use variables or functions defined in the bootstrap script or the page itself.
 // Everything here (e.g. console statements) end up the visitor's main console
 
-console.log("extension.js is here!");
-
-// TODO: Break these out into some dictionary or other fancy object? 
-// Probably doesn't matter
-var onNewTopic = false;
-var onRead = false;
-var onBrowse = false;
-
-function setOnNewTopic()
-{
-	onNewTopic = true;
-	onBrowse = false;
-	onRead = false;
-}
-
-function setOnIndex()
-{
-	onNewTopic = false;
-	onBrowse = true;
-	onRead = false;
-}
-
-function setOnRead()
-{
-	onNewTopic = false;
-	onBrowse = false;
-	onRead = true;
- }
-
-// @name replaceAttribute(targetElement, attributeName, attributeValue)
-// @parameter targetElement -- A Node element retrieved from the DOM
-// @parameter attributeName 
-//		A string representing the name of an attribute existing 
-// 		on the target element
-// @parameter attributeValue 
-//		A string representing the value for the attribute. This
-// 		can work for functions like event listeners by using the
-// 		function.toString() method, i.e. setOnRead.toString(), to 
-// 		return the function in string literal form.
-// @return 
-//		Nothing, but adds or replaces attributeName for targetElement so
-//		that it is given attributeValue.
-function replaceAttribute(targetElement, attributeName, attributeValue)
-{
-	if (targetElement.hasAttribute(attributeName))
-	{
-		targetElement.removeAttribute(attributeName);
-	}
-	var newAttr = document.createAttribute(attributeName);
-	newAttr.value = attributeValue;
-	targetElement.setAttributeNode(newAttr);
-}
+console.log("Frenzyboard Enhancment Suite is loading");
 
 //TODO: Figure out why the bootstrap code doesn't work for gating the extension...
 // Set up the window load events based on the page we're currently viewing
@@ -91,6 +40,58 @@ if (window.location.href.toLowerCase().indexOf("frenzyboard.net") > -1)
 			addYoutubeTagButton();
 		});
 	}
+}
+
+// TODO: Break these out into some dictionary or other fancy object? 
+// Probably doesn't matter
+var onNewTopic = false;
+var onRead = false;
+var onBrowse = false;
+
+function setOnNewTopic()
+{
+	onNewTopic = true;
+	onBrowse = false;
+	onRead = false;
+}
+
+function setOnIndex()
+{
+	onNewTopic = false;
+	onBrowse = true;
+	onRead = false;
+}
+
+function setOnRead()
+{
+	onNewTopic = false;
+	onBrowse = false;
+	onRead = true;
+ }
+
+// @name replaceAttribute(targetElement, attributeName, attributeValue)
+// @parameter targetElement 
+//		A Node element retrieved from the DOM
+// @parameter attributeName 
+//		A string representing the name of an attribute existing 
+// 		on the target element
+// @parameter attributeValue 
+//		A string representing the value for the attribute. This
+// 		can work for functions like event listeners by using the
+// 		function.toString() method, i.e. setOnRead.toString(), to 
+// 		return the function in string literal form.
+// @return 
+//		Nothing, but adds or replaces attributeName for targetElement so
+//		that it is given attributeValue.
+function replaceAttribute(targetElement, attributeName, attributeValue)
+{
+	if (targetElement.hasAttribute(attributeName))
+	{
+		targetElement.removeAttribute(attributeName);
+	}
+	var newAttr = document.createAttribute(attributeName);
+	newAttr.value = attributeValue;
+	targetElement.setAttributeNode(newAttr);
 }
 
 // @name youtubeButtonPrompt()
@@ -255,6 +256,7 @@ function setupPreviewTooltips()
 {
 	var targetString = "window.status";
 	var returnTrueString = "; return true;";
+	var rowId = "row-id-";
 	// Get all tags with topic class. This includes more than what we
 	// really need, but we can't filter automatically by attribute.
 	var rows = document.getElementsByClassName("topic");
@@ -281,9 +283,11 @@ function setupPreviewTooltips()
 		}
 		if (statusText != '')
 		{
-			// add onmouseover attribute
-			var functionStr = "console.log('" + statusText + "');";
-			replaceAttribute(rows[i], "onmouseover", functionStr);
+			// Add an ID because our tooltip library requires it,
+			// and because IT'S TWENTY SIXTEEN, PEOPLE! C'MON!
+			// IT'S TWENTY. SIX. TEEN! -John Oliver
+			replaceAttribute(rows[i], "id", rowId + i);
+			new Opentip("#" + rowId + i, statusText, {delay: 0, showOn: "mouseover"});
 		}
 	}
 }

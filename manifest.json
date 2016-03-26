@@ -30,7 +30,7 @@
     {
       "matches": ["https://*.frenzyboard.net/*", "http://*.frenzyboard.net/*", "https://frenzyboard.net/*", "http://frenzyboard.net/*"],
 	  "css": ["opentip.css"],
-      "js": ["extension.js", "opentip-native.js"],
+      "js": ["extension.js", "opentip-native.js", "adapter-native.js"],
 	  "run_at": "document_end"
     }
   ]
