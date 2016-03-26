@@ -269,7 +269,7 @@ function setupPreviewTooltips()
 		{
 			continue;
 		}
-		var outerHTML = rows[i].outerHTML.toLowerCase();
+		var outerHTML = rows[i].outerHTML;
 		// Get status text
 		var statusPos = outerHTML.indexOf(targetString);
 		var statusText = '';
